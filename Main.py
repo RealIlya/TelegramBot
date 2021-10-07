@@ -1,47 +1,47 @@
 from Commands import *
 
 app = Client("my_account")
-commands = Commands()
+commands = Commands(app)
 
 
 @app.on_message(filters.text & filters.private & filters.command("help"))
-async def ShowHelpCommand(client: Client, message: filters.Message):
-    await commands.ShowHelp(client, message)
+async def ShowHelpCommand(_, message: filters.Message):
+    return await commands.ShowHelp(message)
 
 
 @app.on_message(filters.text & filters.private & filters.command("work"))
-async def ShowDutiesCommand(client: Client, message: filters.Message):
-    await commands.ShowDuties(client, message)
+async def ShowDutiesCommand(_, message: filters.Message):
+    return await commands.ShowDuties(message)
 
 
 @app.on_message(filters.text & filters.private & filters.command("timetable"))
-async def ShowTimetableCommand(client: Client, message: filters.Message):
-    await commands.ShowTimetable(client, message)
+async def ShowTimetableCommand(_, message: filters.Message):
+    return await commands.ShowTimetable(message)
 
 
 @app.on_message(filters.text & filters.private & filters.command("time"))
-async def ShowTimeCommand(client: Client, message: filters.Message):
-    await commands.ShowTime(client, message)
+async def ShowTimeCommand(_, message: filters.Message):
+    return await commands.ShowTime(message)
 
 
 @app.on_message(filters.text & filters.private & filters.command("hw"))
-async def ShowHomeworkCommand(client: Client, message: filters.Message):
-    await commands.ShowHomework(client, message)
+async def ShowHomeworkCommand(_, message: filters.Message):
+    return await commands.ShowHomework(message)
 
 
-@app.on_message(filters.text & filters.private & filters.command("black"))
-async def ShowBlackCommand(client: Client, message: filters.Message):
-    await commands.ShowBlack(client, message)
+@app.on_message(filters.private & filters.command("black"))
+async def ShowBlackCommand(_, message: filters.Message):
+    return await commands.ShowBlack(message)
 
 
 @app.on_message(filters.text & filters.private & filters.command("newhw"))
-async def CreateHomeworkCommand(client: Client, message: filters.Message):
-    await commands.CreateHomework(client, message)
+async def CreateHomeworkCommand(_, message: filters.Message):
+    return await commands.CreateHomework(message)
 
 
 @app.on_message(filters.text & filters.private & filters.command("echo"))
-async def EchoCommand(client: Client, message: filters.Message):
-    await commands.Echo(client, message)
+async def EchoCommand(_, message: filters.Message):
+    return await commands.Echo(message)
 
 
 def Main():
