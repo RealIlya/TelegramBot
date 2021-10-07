@@ -61,6 +61,7 @@ class Commands:
                                                parse_mode=ParseMode.Markdown)
 
     async def ShowTimetable(self, message: filters.Message):
+        line = ""
         subject = ""
         teacher = ""
         room = ""
@@ -75,27 +76,31 @@ class Commands:
                 for s in newTimetable['SUBJECTS']:
                     for ssg in newTimetable['CLASS_SCHEDULE']['47']['029'][item]['s']:
                         if s == ssg:
-                            subject += newTimetable['SUBJECTS'][s].title()
-                            break
+                            line += newTimetable['SUBJECTS'][s].title() + "\t"
+
+                line += "\n"
 
                 for t in newTimetable['TEACHERS']:
                     for tsg in newTimetable['CLASS_SCHEDULE']['47']['029'][item]['t']:
                         if t == tsg:
-                            teacher += newTimetable['TEACHERS'][t].title()
+                            line += newTimetable['TEACHERS'][t].title() + "\t"
                             break
+
+                line += "\n"
 
                 for r in newTimetable['ROOMS']:
                     for rsg in newTimetable['CLASS_SCHEDULE']['47']['029'][item]['r']:
                         if r == rsg:
-                            room += newTimetable['ROOMS'][r].title() + " "
+                            line += newTimetable['ROOMS'][r].title() + "\t"
                             break
+
+                line += "\n"
 
                 if (number - 1) % 2 == 0:
                     result += f"**Пара {number // 2 + 1}**\n"
-                result += f"{number}. {subject}(к. {room}) {teacher}\n"
-                subject = ""
-                teacher = ""
-                room = ""
+                # result += f"{number}. {subject}(к. {room}) {teacher}\n"
+                result += f"{line}\n"
+                line = ""
                 number += 1
 
         return await self._client.send_message(message.chat.id, result, parse_mode=ParseMode.Markdown)
