@@ -49,6 +49,11 @@ async def RepeatCommand(_, message: filters.Message):
     return await commands.Repeat(message)
 
 
+@app.on_message(filters.text & filters.command("ghoul"))
+async def GhoulCommand(_, message: filters.Message):
+    return await commands.Ghoul(message)
+
+
 def Main():
     app.run()  # Automatically start() and idle()
 
