@@ -29,6 +29,11 @@ async def ShowHomeworkCommand(_, message: filters.Message):
     return await commands.ShowHomework(message)
 
 
+@app.on_message(filters.command("gmeme"))
+async def ShowGeneratedMemeCommand(_, message: filters.Message):
+    return await commands.ShowBlack(message)
+
+
 @app.on_message(filters.command("black"))
 async def ShowBlackCommand(_, message: filters.Message):
     return await commands.ShowBlack(message)
@@ -52,6 +57,12 @@ async def RepeatCommand(_, message: filters.Message):
 @app.on_message(filters.text & filters.command("ghoul"))
 async def GhoulCommand(_, message: filters.Message):
     return await commands.Ghoul(message)
+
+
+@app.on_callback_query()
+async def Result(_, callbackQuery: filters.CallbackQuery):
+
+    await callbackQuery.answer(f"{callbackQuery.data}", show_alert=True)
 
 
 def Main():
