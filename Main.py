@@ -2,6 +2,7 @@ from Commands import *
 
 app = Client("my_account")
 commands = Commands(app)
+timetableButtons = [f"t{i}" for i in range(0, 7)]
 
 
 @app.on_message(filters.text & filters.command("help"))
@@ -15,8 +16,8 @@ async def ShowDutiesCommand(_, message: filters.Message):
 
 
 @app.on_message(filters.text & filters.command("timetable"))
-async def ShowTimetableCommand(_, message: filters.Message):
-    return await commands.ShowTimetable(message)
+async def ChooseTimetableCommand(_, message: filters.Message):
+    return await commands.ChooseTimetable(message)
 
 
 @app.on_message(filters.text & filters.command("time"))
@@ -39,7 +40,7 @@ async def ShowBlackCommand(_, message: filters.Message):
     return await commands.ShowBlack(message)
 
 
-@app.on_message(filters.text & filters.command("newhw"))
+@app.on_message(filters.command("newhw"))
 async def CreateHomeworkCommand(_, message: filters.Message):
     return await commands.CreateHomework(message)
 
@@ -60,9 +61,11 @@ async def GhoulCommand(_, message: filters.Message):
 
 
 @app.on_callback_query()
-async def Result(_, callbackQuery: filters.CallbackQuery):
-
-    await callbackQuery.answer(f"{callbackQuery.data}", show_alert=True)
+async def ShowTimeTableCallback(_, callbackQuery: filters.CallbackQuery):
+    if callbackQuery.data in timetableButtons:
+        return await commands.ShowTimetable(callbackQuery)
+    if callbackQuery.data == "t-1":
+        return await commands.AgainChooseTimetable(callbackQuery)
 
 
 def Main():
