@@ -64,8 +64,8 @@ async def GhoulCommand(_, message: filters.Message):
 async def ShowTimeTableCallback(_, callbackQuery: filters.CallbackQuery):
     if callbackQuery.data in timetableButtons:
         return await commands.ShowTimetable(callbackQuery)
-    if callbackQuery.data == "t-1":
-        return await commands.AgainChooseTimetable(callbackQuery)
+    if callbackQuery.data == "-1":
+        return await commands.MoveBack(callbackQuery)
 
 
 def Main():

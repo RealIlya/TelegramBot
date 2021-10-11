@@ -1,4 +1,5 @@
 import requests
+import json
 from time import sleep
 from datetime import datetime
 
@@ -6,11 +7,11 @@ import tgcrypto
 from pyrogram import Client, filters
 from pyrogram.types import *
 
-from Models.InlineButton import *
+from Models.InlineButton import InlineButton
 
-from Stuff.Duties import *
-from Stuff.Errors import *
-from Stuff.ParseMode import *
+from Stuff.Duties import Duties
+from Stuff.Errors import Errors
+from Stuff.ParseMode import ParseMode, GetOnlyText
 
 
 class Commands:
@@ -19,7 +20,9 @@ class Commands:
         self._client = client
         InlineButton.client = client
         self.duties: Duties = Duties()
-        self.buttons: List[InlineButton] = List()
+        self.navigation: List[InlineButton] = List()
+
+        self.hwList: dict[int: List] = {}
 
         timetable = requests.get("https://lyceum.nstu.ru/rasp/nika_data_11102021_161733.js", verify=False).text. \
             replace(
@@ -53,11 +56,13 @@ class Commands:
                                                parse_mode=ParseMode.Markdown)
 
     async def ChooseTimetable(self, message: filters.Message):
-        return await self._client.send_message(message.chat.id, "Выберите день недели.",
-                                               reply_markup=InlineKeyboardMarkup(
-                                                   [[InlineKeyboardButton(f"{self._timetable['DAY_NAMES'][h + w]}",
-                                                                          callback_data=f"t{h + w}")
-                                                     for w in range(0, 2)] for h in range(0, 5, 2)]))
+        self.navigation.clear()
+        self.navigation.append(InlineButton("Выберите день недели.",
+                                            InlineKeyboardMarkup(
+                                                [[InlineKeyboardButton(f"{self._timetable['DAY_NAMES'][h + w]}",
+                                                                       callback_data=f"t{h + w}")
+                                                  for w in range(0, 2)] for h in range(0, 5, 2)])))
+        return await self.navigation[0].SendKeyboardMarkup(message)
 
     async def ShowTimetable(self, callbackQuery: filters.CallbackQuery):
         flag = True
@@ -84,16 +89,9 @@ class Commands:
                 number += 1
                 flag = False
 
-        return await callbackQuery.edit_message_text(result, reply_markup=InlineKeyboardMarkup(
-            [[InlineKeyboardButton("Назад", callback_data="t-1")]]), parse_mode=ParseMode.Markdown)
-
-    async def AgainChooseTimetable(self, callbackQuery: filters.CallbackQuery):
-        return await callbackQuery.edit_message_text("Выберите день недели.",
-                                                     reply_markup=InlineKeyboardMarkup(
-                                                         [[InlineKeyboardButton(
-                                                             f"{self._timetable['DAY_NAMES'][h + w]}",
-                                                             callback_data=f"t{h + w}")
-                                                           for w in range(0, 2)] for h in range(0, 5, 2)]))
+        self.navigation.append(
+            InlineButton(result, InlineKeyboardMarkup([[InlineKeyboardButton("Назад", callback_data="-1")]])))
+        return await self.navigation[-1].EditKeyboardMarkup(callbackQuery)
 
     async def ShowTime(self, message: filters.Message):
         return await self._client.send_message(message.chat.id,
@@ -102,7 +100,13 @@ class Commands:
                                                parse_mode=ParseMode.Markdown)
 
     async def ShowHomework(self, message: filters.Message):
-        pass
+        textList = GetOnlyText(message.text)
+        for item in self.hwList:
+            if textList[0] in self.hwList[item]:
+                return await self._client.send_message(message.chat.id,
+                                                       self.hwList[item][0],
+                                                       reply_to_message_id=self.hwList[item][2],
+                                                       parse_mode=ParseMode.Markdown)
 
     async def ShowBlack(self, message: filters.Message):
         await self._client.send_message(message.chat.id, "Called")
@@ -122,13 +126,13 @@ class Commands:
         :return:
         """
         if not message.caption:
-            await Errors.PrintError(message, "Некорректно!")
+            return await Errors.PrintError(message, "Некорректно!")
 
-        textList = message.caption.split(' ')[1:]
-        resultList = [*textList, message.photo, message.message_id]
-        # print(textList[1])
-        # print(textList[2])
-        print(resultList)
+        textList = GetOnlyText(message.caption)
+        self.hwList[0] = [*textList, message.message_id]
+
+    async def SaveHomework(self, callbackQuery: filters.CallbackQuery):
+        pass
 
     async def Echo(self, message: filters.Message):
         textList = GetOnlyText(message.text)
@@ -163,3 +167,7 @@ class Commands:
         # return [await self._client.edit_message_text(message.chat.id, startMessage.message_id,
         #                                              f"{i} - 7 = {i - 7}" if i >= 0 else "я гуль")
         #         for i in range(993, -7, -7) if not sleep(0.2)]
+
+    async def MoveBack(self, callbackQuery: filters.CallbackQuery):
+        del self.navigation[-1]
+        return await self.navigation[-1].EditKeyboardMarkup(callbackQuery)
